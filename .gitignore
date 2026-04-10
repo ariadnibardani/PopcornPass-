@@ -31,3 +31,9 @@ static/images/
 # Windows
 Thumbs.db
 desktop.ini
+
+*.webp
+*.jpg
+*.png
+*.gif
+*.jpeg
