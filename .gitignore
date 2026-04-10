@@ -26,6 +26,7 @@ media/
 
 # Static collected files
 staticfiles/
+static/images/
 
 # Windows
 Thumbs.db
