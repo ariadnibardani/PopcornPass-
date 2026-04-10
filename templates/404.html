@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block title %}Page Not Found — PopcornPass{% endblock %}
+{% block content %}
+<div class="text-center py-5">
+  <div style="font-size:5rem;">📭</div>
+  <h2 class="section-title mt-3">Page Not Found</h2>
+  <p class="text-muted fs-5">
+    The page you're looking for doesn't exist or has been moved.
+  </p>
+  <a href="{% url 'home' %}" class="btn btn-navy px-4 mt-2">Go Home</a>
+  <a href="{% url 'catalogue' %}" class="btn btn-gold px-4 mt-2 ms-2">Browse Movies</a>
+</div>
+{% endblock %}

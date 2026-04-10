@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}PopcornPass — Discover Great Movies{% endblock %}
+
+{% block content %}
+
+<!-- Hero -->
+<div class="hero-section mb-4">
+  <div class="row align-items-center">
+    <div class="col-lg-7">
+      <h1>
+        Discover Your Next<br>
+        <span>Favourite Film.</span>
+      </h1>
+      <p class="fs-5 mt-3 mb-4" style="color:rgba(255,255,255,0.7);">
+        Browse thousands of movies, rent your favourites
+        and track everything you want to watch.
+      </p>
+      <div class="d-flex gap-3 flex-wrap">
+        <a href="{% url 'catalogue' %}" class="btn btn-gold px-4 py-2 fw-bold">
+          <i class="bi bi-play-circle me-2"></i>Browse Movies
+        </a>
+        {% if not user.is_authenticated %}
+        <a href="{% url 'register' %}"
+           class="btn px-4 py-2"
+           style="border:2px solid rgba(255,255,255,0.3);color:white;">
+          <i class="bi bi-person-plus me-2"></i>Join Free
+        </a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Browse by Genre -->
+<h3 class="section-title">Browse by Genre</h3>
+<div class="row g-2 mb-5">
+  {% for genre in genres %}
+  <div class="col-6 col-md-3 col-lg-2">
+    <a href="{% url 'catalogue' %}?genre={{ genre.slug }}" class="filter-chip">
+      <span class="chip-icon">
+        {% if genre.name == 'Action' %}💥
+        {% elif genre.name == 'Drama' %}🎭
+        {% elif genre.name == 'Comedy' %}😂
+        {% elif genre.name == 'Horror' %}👻
+        {% elif genre.name == 'Sci-Fi' %}🚀
+        {% elif genre.name == 'Thriller' %}🔪
+        {% elif genre.name == 'Animation' %}🎨
+        {% elif genre.name == 'Romance' %}❤️
+        {% else %}🎬
+        {% endif %}
+      </span>
+      {{ genre.name }}
+    </a>
+  </div>
+  {% empty %}
+  <p class="text-muted">No genres yet.</p>
+  {% endfor %}
+</div>
+
+<!-- Browse by Decade -->
+<h3 class="section-title">Browse by Decade</h3>
+<div class="row g-2 mb-5">
+  {% for decade in decades %}
+  <div class="col-6 col-md-3 col-lg-2">
+    <a href="{% url 'catalogue' %}?decade={{ decade.slug }}" class="filter-chip">
+      <span class="chip-icon">📽️</span>
+      {{ decade.name }}
+    </a>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- Featured -->
+<h3 class="section-title">Featured Movies</h3>
+<div class="row g-3 mb-5">
+  {% for movie in featured %}
+  <div class="col-6 col-md-4 col-lg-2">
+    <div class="movie-card card h-100">
+      {% if movie.poster %}
+        <img src="{{ movie.poster.url }}"
+             class="card-img-top"
+             alt="{{ movie.title }}">
+      {% else %}
+        <div class="movie-poster-placeholder">
+          <i class="bi bi-camera-reels"></i>
+          <span>No Poster</span>
+        </div>
+      {% endif %}
+      <div class="card-body">
+        <div class="d-flex gap-1 mb-1 flex-wrap">
+          <span class="badge-genre" style="font-size:0.65rem;">
+            {{ movie.genre }}
+          </span>
+        </div>
+        <h6 class="card-title">{{ movie.title }}</h6>
+        <p class="text-muted small mb-0">{{ movie.director.name }}</p>
+      </div>
+      <div class="card-footer">
+        <span class="price-tag">€{{ movie.rental_price }}</span>
+        <a href="{% url 'movie_detail' movie.slug %}"
+           class="btn btn-navy btn-sm">
+          <i class="bi bi-play me-1"></i>View
+        </a>
+      </div>
+    </div>
+  </div>
+  {% empty %}
+  <p class="text-muted">No featured movies yet, add some via the admin panel.</p>
+  {% endfor %}
+</div>
+
+<!-- Recommended For You -->
+{% if user.is_authenticated and recommended %}
+<hr class="my-4">
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h3 class="section-title mb-0">
+    <i class="bi bi-stars me-2" style="color:var(--orange)"></i>
+    Recommended For You
+  </h3>
+  <a href="{% url 'recommendations' %}" class="btn btn-outline-secondary btn-sm">
+    See All
+  </a>
+</div>
+<div class="row g-4">
+  {% for movie in recommended %}
+  <div class="col-6 col-md-3">
+    <div class="movie-card card h-100">
+      {% if movie.poster %}
+        <img src="{{ movie.poster.url }}"
+            class="card-img-top"
+            alt="{{ movie.title }}">
+      {% else %}
+        <div class="movie-poster-placeholder">
+          <i class="bi bi-camera-reels"></i>
+        </div>
+      {% endif %}
+      <div class="card-body">
+        <h6 class="card-title">{{ movie.title }}</h6>
+        <p class="text-muted small mb-0">{{ movie.director.name }}</p>
+      </div>
+      <div class="card-footer">
+        <span class="price-tag">€{{ movie.rental_price }}</span>
+        <a href="{% url 'movie_detail' movie.slug %}"
+          class="btn btn-navy btn-sm">View</a>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+{% endblock %}

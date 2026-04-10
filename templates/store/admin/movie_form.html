@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block title %}{{ action }} — PopcornPass{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2 class="section-title mb-0">{{ action }}</h2>
+      <a href="{% url 'admin_movie_list' %}"
+         class="btn btn-outline-secondary">← Back</a>
+    </div>
+    <div class="card border-0 shadow-sm">
+      <div class="card-body p-4">
+        <form method="POST" enctype="multipart/form-data">
+          {% csrf_token %}
+          {{ form|crispy }}
+          <div class="d-flex gap-2 mt-3">
+            <button type="submit" class="btn btn-gold px-4">
+              <i class="bi bi-check-circle me-1"></i>Save
+            </button>
+            <a href="{% url 'admin_movie_list' %}"
+               class="btn btn-outline-secondary">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/admin.js' %}"></script>
+{% endblock %}

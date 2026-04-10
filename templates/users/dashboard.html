@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard — PopcornPass{% endblock %}
+
+{% block content %}
+<h2 class="section-title">
+  <i class="bi bi-speedometer2 me-2" style="color:var(--orange)"></i>
+  My Dashboard
+</h2>
+<div class="row g-4">
+
+  <div class="col-md-6">
+    <div class="card h-100 shadow-sm border-0">
+      <div class="card-header bg-dark text-white border-0 rounded-top">
+        <i class="bi bi-bag-play me-2"></i>Recent Rentals
+      </div>
+      <div class="card-body">
+        {% if recent_orders %}
+        <ul class="list-group list-group-flush">
+          {% for order in recent_orders %}
+          <li class="list-group-item d-flex justify-content-between">
+            <span>Order #{{ order.id }}</span>
+            <span class="badge bg-secondary">{{ order.status }}</span>
+            <span class="price-tag">€{{ order.total }}</span>
+          </li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <p class="text-muted">No rentals yet.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="card h-100 shadow-sm border-0">
+      <div class="card-header bg-dark text-white border-0 rounded-top">
+        <i class="bi bi-bookmark me-2"></i>Watchlist
+      </div>
+      <div class="card-body">
+        {% if watchlist %}
+        <ul class="list-group list-group-flush">
+          {% for item in watchlist %}
+          <li class="list-group-item">
+            <a href="{% url 'movie_detail' item.movie.slug %}"
+               class="text-decoration-none">
+              {{ item.movie.title }}
+            </a>
+          </li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <p class="text-muted">Your watchlist is empty.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="card h-100 shadow-sm border-0">
+      <div class="card-header bg-dark text-white border-0 rounded-top">
+        <i class="bi bi-clock-history me-2"></i>Recently Viewed
+      </div>
+      <div class="card-body">
+        {% if recent_views %}
+        <ul class="list-group list-group-flush">
+          {% for v in recent_views %}
+          <li class="list-group-item">
+            <a href="{% url 'movie_detail' v.movie.slug %}"
+               class="text-decoration-none">
+              {{ v.movie.title }}
+            </a>
+          </li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <p class="text-muted">No recently viewed movies.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="card h-100 shadow-sm border-0">
+      <div class="card-header bg-dark text-white border-0 rounded-top">
+        <i class="bi bi-star me-2"></i>My Ratings
+      </div>
+      <div class="card-body">
+        {% if ratings %}
+        <ul class="list-group list-group-flush">
+          {% for r in ratings %}
+          <li class="list-group-item d-flex justify-content-between">
+            <a href="{% url 'movie_detail' r.movie.slug %}"
+               class="text-decoration-none">
+              {{ r.movie.title }}
+            </a>
+            <span>{{ r.score }}/5 ⭐</span>
+          </li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <p class="text-muted">You haven't rated any movies yet.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body">
+        <h6 class="fw-semibold">
+          <i class="bi bi-stars me-2" style="color:var(--orange)"></i>
+          Recommended For You
+        </h6>
+        <p class="text-muted small">
+          Based on your viewing history and ratings.
+        </p>
+        <a href="{% url 'recommendations' %}" class="btn btn-gold btn-sm px-4">
+          <i class="bi bi-magic me-1"></i>See Recommendations
+        </a>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

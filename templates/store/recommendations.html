@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Recommended For You — PopcornPass{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+
+  <!-- Sidebar: why these? -->
+  <div class="col-md-3">
+    <div class="card border-0 shadow-sm p-4">
+      <h6 class="fw-semibold mb-3">
+        <i class="bi bi-magic me-2" style="color:var(--orange)"></i>
+        Why these movies?
+      </h6>
+      <p class="text-muted small mb-3">
+        Based on your browsing history and preferences.
+      </p>
+
+      {% if top_cats %}
+      <p class="small fw-semibold mb-2">Your top genres:</p>
+      <div class="d-flex flex-wrap gap-2 mb-3">
+        {% for cat in top_cats %}
+        <span class="badge-category">
+          {{ cat.movie__category__name }}
+          <span class="text-muted">({{ cat.count }})</span>
+        </span>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      {% if history %}
+      <p class="small fw-semibold mb-2">Recently viewed:</p>
+      <ul class="list-unstyled">
+        {% for v in history %}
+        <li class="mb-1">
+          <a href="{% url 'movie_detail' v.movie.slug %}"
+             class="text-decoration-none text-muted small">
+            <i class="bi bi-clock me-1"></i>{{ v.movie.title|truncatechars:28 }}
+          </a>
+        </li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+
+      <hr>
+      <a href="{% url 'catalogue' %}" class="btn btn-navy btn-sm w-100">
+        <i class="bi bi-grid me-1"></i>Browse All Movies
+      </a>
+    </div>
+  </div>
+
+  <!-- Recommendations grid -->
+  <div class="col-md-9">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2 class="section-title mb-0">
+        <i class="bi bi-stars me-2" style="color:var(--orange)"></i>
+        Recommended For You
+      </h2>
+      <span class="text-muted small">{{ recommendations|length }} suggestions</span>
+    </div>
+
+    {% if recommendations %}
+    <div class="row g-4" id="recommendations-grid">
+      {% for movie in recommendations %}
+      <div class="col-6 col-lg-4">
+        <div class="movie card h-100">
+          {% if movie.cover_image %}
+            <img src="{{ movie.cover_image.url }}"
+                 class="card-img-top"
+                 style="height:200px;object-fit:cover;"
+                 alt="{{ movie.title }}">
+          {% else %}
+            <div class="movie-cover-placeholder">
+              <i class="bi bi-movie"></i>
+            </div>
+          {% endif %}
+          <div class="card-body">
+            <span class="badge-category mb-2 d-inline-block">
+              {{ movie.category }}
+            </span>
+            <h6 class="card-title fw-semibold mb-1">{{ movie.title }}</h6>
+            <p class="text-muted small mb-2">{{ movie.author.name }}</p>
+            <div class="d-flex align-items-center gap-1 mb-2">
+              {% with avg=movie.average_rating %}
+              {% for i in "12345" %}
+                <i class="bi {% if forloop.counter <= avg %}bi-star-fill{% else %}bi-star{% endif %}"
+                   style="color:var(--gold);font-size:0.75rem;"></i>
+              {% endfor %}
+              <span class="text-muted" style="font-size:0.75rem;">({{ avg }})</span>
+              {% endwith %}
+            </div>
+          </div>
+          <div class="card-footer bg-white border-0 d-flex
+                      justify-content-between align-items-center pb-3 px-3">
+            <span class="price-tag">€{{ movie.price }}</span>
+            <a href="{% url 'movie_detail' movie.slug %}"
+               class="btn btn-navy btn-sm">View</a>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    {% else %}
+    <!-- Empty state -->
+    <div class="text-center py-5">
+      <i class="bi bi-movie" style="font-size:4rem;color:var(--muted);"></i>
+      <h4 class="mt-3 text-muted">No recommendations yet</h4>
+      <p class="text-muted">
+        Browse some movies first and we'll suggest titles you'll love!
+      </p>
+      <a href="{% url 'catalogue' %}" class="btn btn-gold px-4 mt-2">
+        Start Browsing
+      </a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/recommendations.js' %}"></script>
+{% endblock %}

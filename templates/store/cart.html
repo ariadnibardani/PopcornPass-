@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Rental Cart — PopcornPass{% endblock %}
+
+{% block content %}
+<h2 class="section-title">
+  <i class="bi bi-bag-play me-2" style="color:var(--orange)"></i>
+  Rental Cart
+</h2>
+
+{% if cart.items.all %}
+<div class="row g-4">
+  <div class="col-lg-8">
+    <div class="card shadow-sm border-0 rounded-3 overflow-hidden">
+      <table class="table cart-table mb-0">
+        <thead>
+          <tr>
+            <th>Movie</th>
+            <th class="text-center">Qty</th>
+            <th class="text-end">Subtotal</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in cart.items.all %}
+          <tr>
+            <td>
+              <div class="d-flex align-items-center gap-3">
+                {% if item.movie.poster %}
+                  <img src="{{ item.movie.poster.url }}"
+                       style="width:45px;height:65px;object-fit:cover;border-radius:6px;">
+                {% else %}
+                  <div style="width:45px;height:65px;background:var(--navy);
+                              border-radius:6px;display:flex;align-items:center;
+                              justify-content:center;">
+                    <i class="bi bi-camera-reels text-white"
+                       style="font-size:0.9rem;"></i>
+                  </div>
+                {% endif %}
+                <div>
+                  <p class="mb-0 fw-semibold">{{ item.movie.title }}</p>
+                  <small class="text-muted">{{ item.movie.director.name }}</small>
+                  <br>
+                  <small class="price-tag">
+                    €{{ item.movie.rental_price }}/rental
+                  </small>
+                </div>
+              </div>
+            </td>
+            <td class="text-center" style="width:130px;">
+              <form method="POST" action="{% url 'update_cart' item.id %}">
+                {% csrf_token %}
+                <div class="input-group input-group-sm justify-content-center">
+                  <input type="number" name="quantity"
+                         value="{{ item.quantity }}"
+                         min="1" max="10"
+                         class="form-control text-center qty-input"
+                         data-item-id="{{ item.id }}"
+                         style="width:60px;">
+                  <button type="submit"
+                          class="btn btn-outline-secondary btn-sm">↺</button>
+                </div>
+              </form>
+            </td>
+            <td class="text-end fw-bold price-tag">€{{ item.subtotal }}</td>
+            <td class="text-end">
+              <a href="{% url 'remove_from_cart' item.id %}"
+                 class="btn btn-sm btn-outline-danger remove-item"
+                 data-title="{{ item.movie.title }}">
+                <i class="bi bi-trash"></i>
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="card shadow-sm border-0 rounded-3 p-4">
+      <h5 class="fw-semibold mb-3">Rental Summary</h5>
+      <div class="d-flex justify-content-between mb-2">
+        <span class="text-muted">Subtotal</span>
+        <span>€{{ cart.total }}</span>
+      </div>
+      <div class="d-flex justify-content-between mb-2">
+        <span class="text-muted">Delivery</span>
+        <span class="text-success">Free</span>
+      </div>
+      <hr>
+      <div class="d-flex justify-content-between fw-bold fs-5 mb-4">
+        <span>Total</span>
+        <span class="price-tag">€{{ cart.total }}</span>
+      </div>
+      <a href="{% url 'checkout' %}" class="btn btn-gold w-100 py-2 fw-bold">
+        <i class="bi bi-play-circle me-2"></i>Confirm Rental
+      </a>
+      <a href="{% url 'catalogue' %}"
+         class="btn btn-outline-secondary w-100 mt-2">
+        Continue Browsing
+      </a>
+    </div>
+  </div>
+</div>
+
+{% else %}
+<div class="text-center py-5">
+  <i class="bi bi-bag-x" style="font-size:4rem;color:var(--muted);"></i>
+  <h4 class="mt-3 text-muted">Your rental cart is empty</h4>
+  <a href="{% url 'catalogue' %}" class="btn btn-navy mt-3 px-4">
+    Browse Movies
+  </a>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/cart.js' %}"></script>
+{% endblock %}

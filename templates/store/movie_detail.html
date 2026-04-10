@@ -1,0 +1,280 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ movie.title }} — PopcornPass{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+
+  <!-- Poster -->
+  <div class="col-md-3">
+    {% if movie.poster %}
+      <img src="{{ movie.poster.url }}"
+           class="img-fluid rounded shadow w-100"
+           style="max-height:420px;object-fit:cover;"
+           alt="{{ movie.title }}">
+    {% else %}
+      <div class="rounded shadow d-flex flex-column align-items-center
+                  justify-content-center"
+           style="height:360px;background:linear-gradient(135deg,#0d0f1a,#1a1f3c);">
+        <i class="bi bi-camera-reels text-white"
+           style="font-size:4rem;opacity:0.3;"></i>
+        <span class="text-white mt-2"
+              style="opacity:0.3;font-size:0.75rem;letter-spacing:2px;">
+          NO POSTER
+        </span>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Info -->
+  <div class="col-md-6">
+    <nav aria-label="breadcrumb" class="mb-2">
+      <ol class="breadcrumb small">
+        <li class="breadcrumb-item">
+          <a href="{% url 'catalogue' %}">Movies</a>
+        </li>
+        {% if movie.genre %}
+        <li class="breadcrumb-item">
+          <a href="{% url 'catalogue' %}?genre={{ movie.genre.slug }}">
+            {{ movie.genre.name }}
+          </a>
+        </li>
+        {% endif %}
+        <li class="breadcrumb-item active">{{ movie.title }}</li>
+      </ol>
+    </nav>
+
+    <h1 class="section-title mb-1" style="font-size:2.2rem;">
+      {{ movie.title }}
+    </h1>
+    {% if movie.release_year %}
+      <span class="text-muted fs-5">({{ movie.release_year }})</span>
+    {% endif %}
+    <p class="text-muted mt-1 mb-2">
+      Directed by <strong>{{ movie.director.name }}</strong>
+    </p>
+
+    <!-- Stars -->
+    <div class="d-flex align-items-center gap-2 mb-3" id="avg-rating-display">
+      <div id="avg-stars">
+        {% for i in "12345" %}
+          <i class="bi {% if forloop.counter <= avg_rating %}bi-star-fill{% else %}bi-star{% endif %}"
+             style="color:var(--gold);font-size:1rem;"></i>
+        {% endfor %}
+      </div>
+      <span class="fw-semibold" id="avg-score">{{ avg_rating }}</span>
+      <span class="text-muted small" id="rating-count">
+        ({{ ratings.count }} review{{ ratings.count|pluralize }})
+      </span>
+    </div>
+
+    <div class="d-flex flex-wrap gap-2 mb-3">
+      {% if movie.genre %}
+        <span class="badge-genre">{{ movie.genre.name }}</span>
+      {% endif %}
+      {% if movie.decade %}
+        <span class="badge-decade">{{ movie.decade.name }}</span>
+      {% endif %}
+      {% if movie.runtime %}
+        <span class="runtime-badge">
+          <i class="bi bi-clock me-1"></i>{{ movie.runtime_display }}
+        </span>
+      {% endif %}
+    </div>
+
+    <p style="line-height:1.8;">{{ movie.description }}</p>
+
+    <ul class="list-unstyled text-muted small row g-1 mt-3">
+      <li class="col-6">
+        <i class="bi bi-building me-1"></i>
+        <strong>Studio:</strong> {{ movie.studio|default:"N/A" }}
+      </li>
+      <li class="col-6">
+        <i class="bi bi-translate me-1"></i>
+        <strong>Language:</strong> {{ movie.get_language_display }}
+      </li>
+      {% if movie.imdb_id %}
+      <li class="col-6">
+        <i class="bi bi-info-circle me-1"></i>
+        <strong>IMDB:</strong>
+        <a href="https://www.imdb.com/title/{{ movie.imdb_id }}/"
+           target="_blank" class="text-muted">
+          {{ movie.imdb_id }}
+        </a>
+      </li>
+      {% endif %}
+    </ul>
+  </div>
+
+  <!-- Rent box -->
+  <div class="col-md-3">
+    <div class="card border-0 shadow-sm p-4 text-center">
+      <div class="price-tag fw-bold mb-1" style="font-size:1.8rem;">
+        €{{ movie.rental_price }}
+      </div>
+      <small class="text-muted mb-3 d-block">per rental</small>
+
+      {% if movie.is_available %}
+        <span class="badge bg-success mb-3">
+          <i class="bi bi-check-circle me-1"></i>Available
+        </span>
+        <a href="{% url 'add_to_cart' movie.id %}"
+           class="btn btn-gold w-100 mb-2 py-2 fw-bold">
+          <i class="bi bi-bag-plus me-1"></i>Add to Cart
+        </a>
+      {% else %}
+        <span class="badge bg-danger mb-3">Unavailable</span>
+      {% endif %}
+
+      {% if user.is_authenticated %}
+        <a href="{% url 'toggle_watchlist' movie.id %}"
+           class="btn w-100
+             {% if in_watchlist %}btn-warning{% else %}btn-outline-warning{% endif %}">
+          <i class="bi {% if in_watchlist %}bi-bookmark-fill{% else %}bi-bookmark{% endif %} me-1"></i>
+          {% if in_watchlist %}In Watchlist{% else %}Add to Watchlist{% endif %}
+        </a>
+      {% else %}
+        <a href="{% url 'login' %}"
+           class="btn btn-outline-secondary w-100 mt-2">
+          <i class="bi bi-person me-1"></i>Login to save
+        </a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- Similar Movies -->
+{% if similar %}
+<hr class="my-5">
+<h3 class="section-title">More Like This</h3>
+<div class="row g-3">
+  {% for m in similar %}
+  <div class="col-6 col-md-3">
+    <div class="movie-card card h-100">
+      {% if m.poster %}
+        <img src="{{ m.poster.url }}"
+            class="card-img-top"
+            style="height:260px;"
+            alt="{{ m.title }}">
+      {% else %}
+        <div class="movie-poster-placeholder" style="height:260px;">
+          <i class="bi bi-camera-reels"></i>
+        </div>
+      {% endif %}
+      <div class="card-body">
+        <h6 class="card-title">{{ m.title }}</h6>
+        <p class="text-muted small mb-0">{{ m.director.name }}</p>
+      </div>
+      <div class="card-footer">
+        <span class="price-tag">€{{ m.rental_price }}</span>
+        <a href="{% url 'movie_detail' m.slug %}"
+          class="btn btn-navy btn-sm">View</a>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- Reviews -->
+<hr class="my-5">
+<div class="row g-4">
+  <div class="col-md-4">
+    {% if user.is_authenticated %}
+    <div class="card border-0 shadow-sm p-4" id="rating-card">
+      <h5 class="fw-semibold mb-3">
+        {% if user_rating %}Update Your Review{% else %}Rate This Movie{% endif %}
+      </h5>
+      <div class="star-picker mb-3" id="star-picker">
+        {% for i in "12345" %}
+        <i class="bi bi-star star-btn"
+           data-score="{{ forloop.counter }}"
+           style="font-size:2rem;color:#ccc;"></i>
+        {% endfor %}
+      </div>
+      <input type="hidden" id="selected-score"
+             value="{% if user_rating %}{{ user_rating.score }}{% else %}0{% endif %}">
+      <textarea id="review-text" class="form-control mb-3" rows="3"
+                placeholder="Write your review (optional)...">
+        {% if user_rating %}{{ user_rating.review }}{% endif %}
+      </textarea>
+      <button id="submit-rating" class="btn btn-gold w-100"
+              data-movie-id="{{ movie.id }}"
+              data-url="{% url 'rate_movie' movie.id %}">
+        <i class="bi bi-send me-1"></i>
+        {% if user_rating %}Update Review{% else %}Submit Review{% endif %}
+      </button>
+      {% if user_rating %}
+      <button id="delete-rating" class="btn btn-outline-danger w-100 mt-2"
+              data-url="{% url 'delete_rating' movie.id %}">
+        <i class="bi bi-trash me-1"></i>Delete My Review
+      </button>
+      {% endif %}
+      <div id="rating-message" class="mt-2 small text-success d-none"></div>
+    </div>
+    {% else %}
+    <div class="card border-0 shadow-sm p-4 text-center">
+      <i class="bi bi-star text-warning" style="font-size:2.5rem;"></i>
+      <p class="mt-2 text-muted">
+        <a href="{% url 'login' %}">Log in</a> to leave a review.
+      </p>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="col-md-8">
+    <h5 class="fw-semibold mb-3">
+      Reviews
+      <span class="text-muted small fw-normal" id="reviews-header-count">
+        ({{ ratings.count }})
+      </span>
+    </h5>
+    <div id="reviews-list">
+      {% for r in ratings %}
+      <div class="card border-0 shadow-sm mb-3 review-item"
+           data-review-id="{{ r.id }}">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <strong>{{ r.user.username }}</strong>
+              <span class="text-muted small ms-2">
+                {{ r.created|date:"d M Y" }}
+              </span>
+            </div>
+            <div>
+              {% for i in "12345" %}
+                <i class="bi {% if forloop.counter <= r.score %}bi-star-fill{% else %}bi-star{% endif %}"
+                   style="color:var(--gold);font-size:0.9rem;"></i>
+              {% endfor %}
+            </div>
+          </div>
+          {% if r.review %}
+          <p class="mb-0 mt-2 text-muted">{{ r.review }}</p>
+          {% endif %}
+        </div>
+      </div>
+      {% empty %}
+      <div id="no-reviews-msg">
+        <p class="text-muted">No reviews yet. Be the first!</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<script>
+  var POPCORNPASS_USER_RATING  = "{{ user_rating.score|default:0 }}";
+  var POPCORNPASS_IS_LOGGED_IN = "{{ user.is_authenticated|yesno:'true,false' }}";
+  var POPCORNPASS_CSRF         = "{{ csrf_token }}";
+  window.POPCORNPASS = {
+    userRating: parseInt(POPCORNPASS_USER_RATING) || 0,
+    isLoggedIn: POPCORNPASS_IS_LOGGED_IN === 'true',
+    csrfToken:  POPCORNPASS_CSRF,
+  };
+</script>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/ratings.js' %}"></script>
+{% endblock %}

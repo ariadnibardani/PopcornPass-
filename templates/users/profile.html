@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}My Profile — PopcornPass{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-7">
+    <h3 class="mb-4"><i class="bi bi-person-circle me-2"></i>My Profile</h3>
+    <div class="card shadow-sm">
+      <div class="card-body p-4">
+        <form method="POST" enctype="multipart/form-data">
+          {% csrf_token %}
+          <h5 class="mb-3">Account Details</h5>
+          {{ user_form|crispy }}
+          <hr>
+          <h5 class="mb-3">Personal Info</h5>
+          {{ profile_form|crispy }}
+          <button type="submit" class="btn btn-dark mt-2">Save Changes</button>
+          <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary mt-2 ms-2">Back to Dashboard</a>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

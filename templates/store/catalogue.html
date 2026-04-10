@@ -1,0 +1,184 @@
+{% extends 'base.html' %}
+
+{% block title %}Movies — PopcornPass{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+
+  <!-- Sidebar -->
+  <div class="col-md-3">
+    <div class="filter-card">
+      <h5 class="fw-semibold mb-3">
+        <i class="bi bi-funnel me-1" style="color:var(--orange)"></i>Filters
+      </h5>
+      <form method="GET" action="{% url 'catalogue' %}">
+        {% if q %}<input type="hidden" name="q" value="{{ q }}">{% endif %}
+
+        <label class="form-label fw-semibold small">Genre</label>
+        <select class="form-select form-select-sm mb-3" name="genre"
+                onchange="this.form.submit()">
+          <option value="">All Genres</option>
+          {% for g in genres %}
+          <option value="{{ g.slug }}"
+            {% if selected_genre.slug == g.slug %}selected{% endif %}>
+            {{ g.name }}
+          </option>
+          {% endfor %}
+        </select>
+
+        <label class="form-label fw-semibold small">Decade</label>
+        <select class="form-select form-select-sm mb-3" name="decade"
+                onchange="this.form.submit()">
+          <option value="">All Decades</option>
+          {% for d in decades %}
+          <option value="{{ d.slug }}"
+            {% if selected_decade.slug == d.slug %}selected{% endif %}>
+            {{ d.name }}
+          </option>
+          {% endfor %}
+        </select>
+
+        <label class="form-label fw-semibold small">
+          Rental Price (€{{ db_min_price }} – €{{ db_max_price }})
+        </label>
+        <div class="d-flex gap-2 mb-3">
+          <input type="number"
+                class="form-control form-control-sm"
+                name="min_price"
+                placeholder="€{{ db_min_price }}"
+                min="{{ db_min_price }}"
+                max="{{ db_max_price }}"
+                step="0.50"
+                value="{{ request.GET.min_price }}">
+          <input type="number"
+                class="form-control form-control-sm"
+                name="max_price"
+                placeholder="€{{ db_max_price }}"
+                min="{{ db_min_price }}"
+                max="{{ db_max_price }}"
+                step="0.50"
+                value="{{ request.GET.max_price }}">
+        </div>
+
+        <label class="form-label fw-semibold small">
+          Release Year ({{ db_min_year }} – {{ db_max_year }})
+        </label>
+        <div class="d-flex gap-2 mb-3">
+          <input type="number"
+                class="form-control form-control-sm"
+                name="year_from"
+                placeholder="{{ db_min_year }}"
+                min="{{ db_min_year }}"
+                max="{{ db_max_year }}"
+                value="{{ request.GET.year_from }}">
+          <input type="number"
+                class="form-control form-control-sm"
+                name="year_to"
+                placeholder="{{ db_max_year }}"
+                min="{{ db_min_year }}"
+                max="{{ db_max_year }}"
+                value="{{ request.GET.year_to }}">
+        </div>
+
+        <label class="form-label fw-semibold small">Language</label>
+        <select class="form-select form-select-sm mb-3" name="language">
+          <option value="">All</option>
+          {% for code, label in language_choices %}
+          <option value="{{ code }}"
+            {% if request.GET.language == code %}selected{% endif %}>
+            {{ label }}
+          </option>
+          {% endfor %}
+        </select>
+
+        <button type="submit" class="btn btn-navy w-100 btn-sm">
+          Apply Filters
+        </button>
+        <a href="{% url 'catalogue' %}"
+           class="btn btn-outline-secondary w-100 mt-2 btn-sm">
+          Clear All
+        </a>
+      </form>
+    </div>
+  </div>
+
+  <!-- Grid -->
+  <div class="col-md-9">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h4 class="section-title mb-0" style="font-size:1.4rem;">
+        {% if selected_genre %}{{ selected_genre.name }}
+        {% elif selected_decade %}{{ selected_decade.name }}
+        {% else %}All Movies{% endif %}
+        <span class="text-muted fs-6 fw-normal ms-2">
+          ({{ movies.count }} results)
+        </span>
+      </h4>
+      <form method="GET" action="{% url 'catalogue' %}"
+            class="d-flex align-items-center gap-2">
+        {% if q %}<input type="hidden" name="q" value="{{ q }}">{% endif %}
+        <select class="form-select form-select-sm" name="sort"
+                onchange="this.form.submit()" style="width:160px;">
+          <option value="title"
+            {% if sort == 'title' %}selected{% endif %}>Title A–Z</option>
+          <option value="newest"
+            {% if sort == 'newest' %}selected{% endif %}>Newest First</option>
+          <option value="oldest"
+            {% if sort == 'oldest' %}selected{% endif %}>Oldest First</option>
+          <option value="price_asc"
+            {% if sort == 'price_asc' %}selected{% endif %}>Price ↑</option>
+          <option value="price_desc"
+            {% if sort == 'price_desc' %}selected{% endif %}>Price ↓</option>
+        </select>
+      </form>
+    </div>
+
+    <div class="row g-4">
+      {% for movie in movies %}
+      <div class="col-6 col-md-4 col-lg-3">
+        <div class="movie-card card h-100">
+          {% if movie.poster %}
+            <img src="{{ movie.poster.url }}"
+                class="card-img-top"
+                alt="{{ movie.title }}">
+          {% else %}
+            <div class="movie-poster-placeholder">
+              <i class="bi bi-camera-reels"></i>
+              <span>No Poster</span>
+            </div>
+          {% endif %}
+          <div class="card-body">
+            <div class="d-flex gap-1 mb-1 flex-wrap">
+              <span class="badge-genre">{{ movie.genre }}</span>
+              {% if movie.decade %}
+                <span class="badge-decade">{{ movie.decade.name }}</span>
+              {% endif %}
+            </div>
+            <h6 class="fw-semibold mb-1">{{ movie.title }}</h6>
+            <p class="text-muted small mb-1">{{ movie.director.name }}</p>
+            {% if movie.runtime %}
+              <span class="runtime-badge">
+                <i class="bi bi-clock me-1"></i>{{ movie.runtime_display }}
+              </span>
+            {% endif %}
+          </div>
+          <div class="card-footer">
+            <span class="price-tag">€{{ movie.rental_price }}</span>
+            <a href="{% url 'movie_detail' movie.slug %}"
+              class="btn btn-navy btn-sm">
+              <i class="bi bi-play me-1"></i>View
+            </a>
+          </div>
+        </div>
+      </div>
+      {% empty %}
+      <div class="col-12">
+        <div class="alert alert-info">
+          <i class="bi bi-info-circle me-2"></i>
+          No movies found matching your filters.
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

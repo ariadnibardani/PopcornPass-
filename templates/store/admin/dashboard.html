@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+{% block title %}Admin — PopcornPass{% endblock %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h2 class="section-title mb-0">
+    <i class="bi bi-shield-check me-2" style="color:var(--orange)"></i>
+    Admin Dashboard
+  </h2>
+  <span class="badge px-3 py-2" style="background:var(--navy);font-size:0.85rem;">
+    {% if user.is_superuser %}👑 Superuser{% else %}🛡️ Staff{% endif %}
+  </span>
+</div>
+
+<!-- Stats -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3">
+    <div class="card border-0 shadow-sm text-center p-3">
+      <div style="font-size:2rem;color:var(--orange)">{{ total_movies }}</div>
+      <div class="text-muted small">Movies</div>
+      <a href="{% url 'admin_movie_list' %}" class="btn btn-sm btn-navy mt-2">Manage</a>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card border-0 shadow-sm text-center p-3">
+      <div style="font-size:2rem;color:var(--orange)">{{ total_genres }}</div>
+      <div class="text-muted small">Genres</div>
+      <a href="{% url 'admin_genre_list' %}" class="btn btn-sm btn-navy mt-2">Manage</a>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card border-0 shadow-sm text-center p-3">
+      <div style="font-size:2rem;color:var(--orange)">{{ total_orders }}</div>
+      <div class="text-muted small">Rentals</div>
+      <a href="{% url 'admin_order_list' %}" class="btn btn-sm btn-navy mt-2">View</a>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card border-0 shadow-sm text-center p-3">
+      <div style="font-size:2rem;color:var(--orange)">{{ total_users }}</div>
+      <div class="text-muted small">Users</div>
+      {% if user.is_superuser %}
+        <a href="{% url 'admin_user_list' %}" class="btn btn-sm btn-navy mt-2">Manage</a>
+      {% else %}
+        <span class="text-muted small d-block mt-2">Superuser only</span>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-12">
+    <div class="card border-0 shadow-sm p-3">
+      <h6 class="fw-semibold mb-3">Quick Actions</h6>
+      <div class="d-flex flex-wrap gap-2">
+        <a href="{% url 'admin_movie_add' %}" class="btn btn-gold">
+          <i class="bi bi-plus-circle me-1"></i>Add Movie
+        </a>
+        <a href="{% url 'admin_genre_add' %}" class="btn btn-navy">
+          <i class="bi bi-plus-circle me-1"></i>Add Genre
+        </a>
+        <a href="{% url 'admin_movie_list' %}" class="btn btn-outline-secondary">
+          <i class="bi bi-list-ul me-1"></i>All Movies
+        </a>
+        <a href="{% url 'admin_order_list' %}" class="btn btn-outline-secondary">
+          <i class="bi bi-bag me-1"></i>All Rentals
+        </a>
+        {% if user.is_superuser %}
+        <a href="{% url 'admin_user_list' %}" class="btn btn-outline-danger">
+          <i class="bi bi-people me-1"></i>Manage Users
+        </a>
+        <a href="/admin/" class="btn btn-outline-dark">
+          <i class="bi bi-terminal me-1"></i>Django Admin
+        </a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+  <div class="card-header bg-white border-0 pt-3 pb-0">
+    <h6 class="fw-semibold">Recent Rentals</h6>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead class="cart-table">
+          <tr>
+            <th>Order #</th><th>Customer</th>
+            <th>Total</th><th>Status</th><th>Date</th><th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for order in recent_orders %}
+          <tr>
+            <td>#{{ order.id }}</td>
+            <td>{{ order.user.username }}</td>
+            <td class="price-tag">€{{ order.total }}</td>
+            <td>
+              <span class="badge
+                {% if order.status == 'returned' %}bg-success
+                {% elif order.status == 'active' %}bg-info text-dark
+                {% elif order.status == 'confirmed' %}bg-primary
+                {% else %}bg-secondary{% endif %}">
+                {{ order.get_status_display }}
+              </span>
+            </td>
+            <td class="text-muted small">{{ order.created_at|date:"d M Y" }}</td>
+            <td>
+              <a href="{% url 'admin_order_detail' order.id %}"
+                 class="btn btn-sm btn-outline-secondary">View</a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="6" class="text-center text-muted py-3">
+              No rentals yet.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
