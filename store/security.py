@@ -5,7 +5,7 @@ from django.utils.html import escape
 
 
 # ── Allowed HTML tags for reviews (very minimal) ──────────────
-ALLOWED_TAGS   = []   # no HTML at all in reviews
+ALLOWED_TAGS   = []   
 ALLOWED_ATTRS  = {}
 
 
