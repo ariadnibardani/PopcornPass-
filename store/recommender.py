@@ -69,28 +69,45 @@ def get_recommendations(user, limit=8):
 
     return recommendations[:limit]
 
-
 def get_similar_movies(movie, limit=4):
-    by_director = Movie.objects.filter(
-        director=movie.director
-    ).exclude(id=movie.id).order_by('-release_year')[:2]
+    """
+    Returns movies that are genuinely similar —
+    same genre OR same director, never the same movie,
+    never movies from completely different genres.
+    """
+    results = []
 
-    dir_ids = [m.id for m in by_director]
-
-    by_genre = Movie.objects.filter(
-        genre=movie.genre
-    ).exclude(id=movie.id).exclude(
-        id__in=dir_ids
-    ).order_by('-featured', '-release_year')[:limit - len(dir_ids)]
-
-    result = list(by_director) + list(by_genre)
-
-    if len(result) < limit:
-        more = Movie.objects.exclude(
-            id=movie.id
+    # First priority: same director, different movie
+    by_director = list(
+        Movie.objects.filter(
+            director=movie.director
         ).exclude(
-            id__in=[m.id for m in result]
-        ).order_by('?')[:limit - len(result)]
-        result.extend(list(more))
+            id=movie.id
+        ).order_by('-release_year')[:2]
+    )
+    results.extend(by_director)
 
-    return result[:limit]
+    # Second priority: same genre, not already included
+    already_ids = [m.id for m in results] + [movie.id]
+    by_genre = list(
+        Movie.objects.filter(
+            genre=movie.genre
+        ).exclude(
+            id__in=already_ids
+        ).order_by('-featured', '-release_year')[:limit - len(results)]
+    )
+    results.extend(by_genre)
+
+    # Final fallback: same decade if still not enough
+    if len(results) < limit:
+        already_ids = [m.id for m in results] + [movie.id]
+        by_decade = list(
+            Movie.objects.filter(
+                decade=movie.decade
+            ).exclude(
+                id__in=already_ids
+            ).order_by('-release_year')[:limit - len(results)]
+        )
+        results.extend(by_decade)
+
+    return results[:limit]
